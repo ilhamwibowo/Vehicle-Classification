@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+from classic.classic_clf import YOALAH
 
 root = tk.Tk()
 root.geometry("1000x600")
@@ -40,7 +41,9 @@ def process():
     
     method = method_combobox.get()
     if method == "Classical":
-        pass # do classical method
+        image = classic(image)
+        image = Image.fromarray(image)
+
     elif method == "CNN (YOLOv8)":
         results = cnn_yolov8(image)
 
@@ -57,6 +60,9 @@ def cnn_yolov8(image):
 
     return detections
 
+def classic(image):
+    classifier = YOALAH('classic/trained_model.pkl')
+    return classifier.predict(image)
 
 left_frame = tk.Frame(root, width=200, height=600, bg="white")
 left_frame.pack(side="left", fill="y")
