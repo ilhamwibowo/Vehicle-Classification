@@ -1,3 +1,4 @@
 ultralytics
 opencv-python
 scikit-image
+networkx[default]

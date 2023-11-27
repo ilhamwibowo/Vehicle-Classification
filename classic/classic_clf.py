@@ -44,8 +44,8 @@ class YOALAH:
         labels = np.array(labels)
         
         # Flatten
-        n_samples, height, width, channels = data.shape
-        data = data.reshape((n_samples, -1))
+        # n_samples, height, width, channels = data.shape
+        # data = data.reshape((n_samples, -1))
         
         return data, labels
 
@@ -53,7 +53,21 @@ class YOALAH:
         folder_path = 'archive/training_image'
         data, labels = self.load_dataset(folder_path)
 
-        X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)
+        extracted_features = []
+
+        cnt = 0
+        for d in data:
+            hog = preprocess.extract_hog_features(d)
+            sift = preprocess.extract_sift_features(d)
+            if(cnt < 5):
+                print(hog.shape, sift.shape)
+                cnt+=1
+            extr = np.concatenate((hog, sift))
+            extracted_features.append(extr)
+        
+        extracted_features = np.array(extracted_features)
+
+        X_train, X_test, y_train, y_test = train_test_split(extracted_features, labels, test_size=0.2, random_state=42)
         
         self.clf.fit(X_train, y_train)
         y_pred = self.clf.predict(X_test)
@@ -61,17 +75,27 @@ class YOALAH:
         print("Accuracy:", accuracy)
 
     def save_model(self, file_name='trained_model.pkl'):
-        joblib.dump(self.clf, file_name)
+        dump(self.clf, file_name)
 
     def predict_classes(self, cropped_images):
         # Resize 
         resized_images = [cv2.resize(img, (100, 100)) for img in cropped_images]
+        # predictions = []
+        extracted = []
 
         # Flatten 
-        flattened_images = np.array([img.flatten() for img in resized_images])
+        # flattened_images = np.array([img.flatten() for img in resized_images])
+
+        for img in resized_images:
+            hog = preprocess.extract_hog_features(img)
+            sift = preprocess.extract_sift_features(img)
+            extr = np.concatenate((hog, sift))
+            extracted.append(extr)
+            # predictions.append(self.clf.predict(extr))
 
         # Predict
-        predictions = self.clf.predict(flattened_images)
+        extracted = np.array(extracted)
+        predictions = self.clf.predict(extracted)
         return predictions
 
     def bounded_image_with_prediction(self, bounded_image, bounding_boxes, predictions):
@@ -125,31 +149,31 @@ class YOALAH:
         return cv2.cvtColor(bounded_image, cv2.COLOR_BGR2RGB)
         # cv2.imwrite('result.jpg', bounded_image)
 
-# if __name__ == "__main__" :
-#     # folder_path = 'archive/training_image'
-#     # data, labels = load_dataset(folder_path)
-#     # print("Data shape:", data.shape)
-#     # print("Labels shape:", labels.shape)
+if __name__ == "__main__" :
+    # folder_path = 'archive/training_image'
+    # data, labels = load_dataset(folder_path)
+    # print("Data shape:", data.shape)
+    # print("Labels shape:", labels.shape)
 
-#     # X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)
+    # X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)
 
-#     # clf = svm.SVC(kernel='linear')
+    # clf = svm.SVC(kernel='linear')
 
-#     # # Train 
-#     # clf.fit(X_train, y_train)
+    # # Train 
+    # clf.fit(X_train, y_train)
 
-#     # # test
-#     # y_pred = clf.predict(X_test)
+    # # test
+    # y_pred = clf.predict(X_test)
 
-#     # accuracy = accuracy_score(y_test, y_pred)
-#     # print("Accuracy:", accuracy)
+    # accuracy = accuracy_score(y_test, y_pred)
+    # print("Accuracy:", accuracy)
 
-#     # dump(clf, 'filename.joblib')
+    # dump(clf, 'filename.joblib')
 
-#     # Train the model
-#     # obj_detector = ClassicObjectDetection()
-#     # obj_detector.save_model()
+    # Train the model
+    obj_detector = YOALAH()
+    obj_detector.save_model()
 
-#     obj_detector = ClassicObjectDetection('trained_model.pkl')
+    # obj_detector = YOALAH('trained_model.pkl')
 
-#     out = obj_detector.predict("archive/training_image/8Ambulance.jpg")
+    out = obj_detector.predict("archive/training_image/8Ambulance.jpg")

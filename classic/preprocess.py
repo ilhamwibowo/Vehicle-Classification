@@ -9,6 +9,8 @@ from skimage.feature import canny
 from skimage.morphology import binary_closing, binary_opening, rectangle, remove_small_objects
 import numpy as np
 import scipy.ndimage as ndi
+from skimage.feature import hog
+import networkx as nx
 
 # ini return image yang udah dikotakin sama koordinat koordinat kotak
 def bounding_box(original_image, segmented_image):
@@ -114,3 +116,49 @@ def segment(image):
 
 # feature extraction here
 # def some feature extraction
+def extract_hog_features(image):
+    print(type(image))
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    features, _ = hog(gray, orientations=8, pixels_per_cell=(8, 8), cells_per_block=(2, 2), visualize=True)
+    return features
+
+def extract_sift_features(image):
+    print(type(image))
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    sift = cv2.xfeatures2d.SIFT_create()
+
+    keypoints, descriptors = sift.detectAndCompute(gray, None)
+    
+    min_response = 0.03  # Adjust the threshold as needed
+    for i in range(5):
+        print(keypoints[i].response)
+    keypoints = [kp for kp in keypoints if kp.response > min_response]
+    descriptors = sift.compute(gray, keypoints)[1]
+    
+    distances = np.linalg.norm(descriptors[:, np.newaxis, :] - descriptors[np.newaxis, :, :], axis=-1)
+
+    G = nx.Graph()
+    for i in range(len(keypoints)):
+        for j in range(i + 1, len(keypoints)):
+            G.add_edge(i, j, weight=distances[i, j])
+    
+    mst_edges = nx.minimum_spanning_edges(G, algorithm='prim', data=False)
+
+    mst_graph = nx.Graph()
+    mst_graph.add_edges_from(mst_edges)
+
+    selected_keypoints = []
+    selected_descriptors = []
+    for edge in mst_edges:
+        selected_keypoints.extend([keypoints[edge[0]], keypoints[edge[1]]])
+        selected_descriptors.extend([descriptors[edge[0]], descriptors[edge[1]]])
+    
+        if len(selected_keypoints) >= 20:
+            break
+    
+    selected_keypoints = np.array(selected_keypoints)
+    selected_descriptors = np.array(selected_descriptors)
+
+    features = selected_descriptors.flatten()
+
+    return features
