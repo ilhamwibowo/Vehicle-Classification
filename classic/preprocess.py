@@ -65,7 +65,8 @@ def segment(image):
     edges = canny(x_gray)
 
     # structuring element-nya garis
-    line_length = 25 
+    line_length = max(5, max(image.shape) // 35)
+    
     horizontal_line = rectangle(1, line_length)
 
     # di-close, fill, trus open, trus buang noise noise

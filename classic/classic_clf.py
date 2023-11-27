@@ -149,7 +149,7 @@ class YOALAH:
         return cv2.cvtColor(bounded_image, cv2.COLOR_BGR2RGB)
         # cv2.imwrite('result.jpg', bounded_image)
 
-if __name__ == "__main__" :
+# if __name__ == "__main__" :
     # folder_path = 'archive/training_image'
     # data, labels = load_dataset(folder_path)
     # print("Data shape:", data.shape)
@@ -171,9 +171,9 @@ if __name__ == "__main__" :
     # dump(clf, 'filename.joblib')
 
     # Train the model
-    obj_detector = YOALAH()
-    obj_detector.save_model()
+    # obj_detector = YOALAH()
+    # obj_detector.save_model()
 
-    # obj_detector = YOALAH('trained_model.pkl')
+    # # obj_detector = YOALAH('trained_model.pkl')
 
-    out = obj_detector.predict("archive/training_image/8Ambulance.jpg")
+    # out = obj_detector.predict("archive/training_image/8Ambulance.jpg")

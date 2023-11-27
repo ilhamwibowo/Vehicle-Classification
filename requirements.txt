@@ -2,3 +2,5 @@ ultralytics
 opencv-python
 scikit-image
 networkx[default]
+scikit-learn
+opencv-contrib-python
