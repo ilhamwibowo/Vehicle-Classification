@@ -4,8 +4,13 @@ import numpy as np
 
 # Melakukan deteksi dengan YOLOv8
 def cnn_yolov8(image):
+    # Load weights YOLO
     model = YOLO("yolov8m.pt")
+
+    # Melakukan prediksi dengan YOLO
     detections = model.predict(source=image, save=False)
+
+    # Menggambar bounding box hasil prediksi ke citra
     image = plot_yolov8_bboxes(np.asarray(image), detections[0].boxes.cpu(), labels=detections[0].names, score=True, conf=None)
 
     return image
@@ -37,10 +42,15 @@ def plot_yolov8_bboxes(image, boxes, labels=[], score=True, conf=None):
 
 # Plot satu box saja
 def box_label(image, box, label='', color=(128, 128, 128), txt_color=(0, 255, 0)):
+    # Ekstrak nilai x, y, w, dan h
     x,y,w,h = box.xywh[0]
     x = int(x)
     y = int(y)
     w = int(w)
     h = int(h)
+
+    # Menambahkan kotak ke citra
     image = cv2.rectangle(image, (x - w//2, y - h//2), (x + w//2, y + h//2), color, 1)
+
+    # Menambahkan text kelas ke citra
     cv2.putText(image, label, (x, y+h//2+10), cv2.FONT_HERSHEY_SIMPLEX, 1, txt_color, 2)

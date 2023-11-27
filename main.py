@@ -22,8 +22,6 @@ def choose_image():
     file_path = filedialog.askopenfilename(
         initialdir="./")
     image = Image.open(file_path)
-    # width, height = int(image.width / 2), int(image.height / 2)
-    # image = image.resize((width, height), Image.LANCZOS)
     canvas.config(width=image.width, height=image.height)
     image = ImageTk.PhotoImage(image)
     canvas.image = image
@@ -38,8 +36,6 @@ def clear_canvas():
 # Ada metode Classical dan CNN (YOLOv8)
 def process():
     image = Image.open(file_path)
-    # width, height = int(image_original.width / 2), int(image_original.height / 2)
-    # image = image_original.resize((width, height), Image.LANCZOS)
     
     method = method_combobox.get()
     if method == "Classical":
